@@ -282,6 +282,28 @@ body{font:600 13px/1.3 Nunito,system-ui,sans-serif;color:var(--ink);font-variant
 #p-stk .chip .p{font-size:26px}#p-stk .g4 .chip .p{font-size:22px}
 #p-stk .chip{padding:7px 10px}
 #p-stk .grid{grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:6px}
+
+/* tarjetas limpias: pedidos e insumos */
+.pgrid{gap:10px 14px}
+.pblk .ph{margin-bottom:4px}
+.pcard{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:12px;padding:6px 10px;margin-bottom:5px}
+.pfecha{flex:0 0 42px;height:42px;border-radius:10px;background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;border:1px solid var(--line)}
+.pfecha b{font-size:18px;font-weight:800}.pfecha span{font-size:10px;font-weight:800;text-transform:uppercase;color:var(--mut);margin-top:2px}
+.pcard.venc .pfecha{background:var(--bad);border-color:var(--bad)}.pcard.venc .pfecha b,.pcard.venc .pfecha span{color:#fff}
+.pcard.prox .pfecha{background:var(--midl);border-color:color-mix(in srgb,var(--mid) 40%,transparent)}.pcard.prox .pfecha b{color:var(--mid)}
+.pinfo{flex:1;min-width:0}.pcli{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pinfo .u{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcant{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:1px}
+.pcant b{font-size:15px;font-weight:800;white-space:nowrap}
+.icards{display:grid;grid-template-columns:1fr;gap:5px}
+.icard{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:12px;padding:6px 10px;border-left:5px solid var(--mid)}
+.icard.ya{border-left-color:var(--bad)}
+.iinfo{flex:1;min-width:0}.inom{font-size:13.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.idias{text-align:center;line-height:1;min-width:52px}
+.idias b{display:block;font-size:20px;font-weight:800;color:var(--mid)}.icard.ya .idias b{color:var(--bad)}
+.idias span{font-size:9.5px;font-weight:800;color:var(--mut);text-transform:uppercase}
+.pcard{padding:5px 9px;margin-bottom:4px}.pfecha{flex-basis:38px;height:38px}.pfecha b{font-size:16px}
+.pgrid{gap:6px 14px}
 </style>
 </head>
 <body>
@@ -430,11 +452,13 @@ function go(){
   // 2 por área, del más atrasado al más nuevo (los sin fecha al final)
   const AREAS=['Termo','PET→Termo','PET→Lam','PET/PE','PET'];
   const ord=(a,b)=>(a.f||'9')<(b.f||'9')?-1:(a.f||'9')>(b.f||'9')?1:0;
-  const fila=x=>{const d=x.f?dias(x.f,hoy):null;
-    return `<tr><td class="fd ${d!=null&&d<0?'bad':d!=null&&d<=3?'mid':''}">${x.f?dmy(x.f):'s/f'}<small>${d==null?'':d<0?'hace '+(-d)+' d':d===0?'hoy':'en '+d+' d'}</small></td>
-      <td><b>${esc(x.cli||'—')}</b><div class="u">${esc(x.det)}</div></td><td class="r"><b>${x.cant}</b><div>${x.est}</div></td></tr>`;};
+  const MES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const card=x=>{const d=x.f?dias(x.f,hoy):null;const c=d==null?'nf':d<0?'venc':d<=3?'prox':'ok';
+    return `<div class="pcard ${c}"><div class="pfecha"><b>${x.f?+x.f.slice(8,10):'—'}</b><span>${x.f?MES[+x.f.slice(5,7)-1]:'s/f'}</span></div>
+      <div class="pinfo"><div class="pcli">${esc(x.cli||'—')}</div><div class="u">${esc(x.det)}${d==null?'':d<0?` · <b class="warn">hace ${-d} d</b>`:d===0?' · <b>hoy</b>':' · en '+d+' d'}</div></div>
+      <div class="pcant"><b>${x.cant}</b>${x.est}</div></div>`;};
   const bloques=AREAS.map(ar=>{const a=it.filter(x=>x.area===ar).sort(ord);if(!a.length)return '';const v=a.filter(x=>x.f&&x.f<hoy).length;
-    return `<div class="pblk"><div class="ph"><span class="ar ${a[0].cls}">${esc(ar)}</span><span class="u">${a.length} pendiente${a.length>1?'s':''}${v?` · <b class="warn">${v} vencido${v>1?'s':''}</b>`:''}</span></div><table class="ut">${a.slice(0,2).map(fila).join('')}</table></div>`;}).join('');
+    return `<div class="pblk"><div class="ph"><span class="ar ${a[0].cls}">${esc(ar)}</span><span class="u">${a.length} pendiente${a.length>1?'s':''}${v?` · <b class="warn">${v} vencido${v>1?'s':''}</b>`:''}</span></div>${a.slice(0,2).map(card).join('')}</div>`;}).join('');
   if(termoOK||T||E)el('urg').innerHTML=bloques?`<div class="pgrid">${bloques}</div>`:'<p class="okmsg">✅ Sin pedidos pendientes.</p>';
 
   // ── Informes de turno de termoformado (pendientes de resolver)
@@ -1150,11 +1174,13 @@ function render(){
   q('kpi').innerHTML=`<div class="tog"><button data-m="1" class="${soloMios?'on':''}">Míos (JS)</button><button data-m="0" class="${soloMios?'':'on'}">Todos</button></div>
   <div class="grid3"><div class="chip neg"><div class="n">A comprar ya</div><div class="p">${urg.length}</div></div><div class="chip mid"><div class="n">Próx. 15 días</div><div class="p">${pro.length}</div></div><div class="chip"><div class="n">Sin datos</div><div class="p">${sin}</div></div></div>`;
   q('kpi').querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{soloMios=b.dataset.m==='1';render();});
-  const fila=x=>`<tr><td>${esc(x.i.nombre)}<div class="u">${esc(x.i.sector)}${x.i.proveedor?' · '+esc(x.i.proveedor):''}${!soloMios&&x.i.responsable?' · '+esc(x.i.responsable):''} · últ. ${dmy(x.e.uc)}</div></td><td class="r ${x.e.tipo==='comprar'?'warn':'midc'}" style="white-space:nowrap">${x.e.tipo==='comprar'?(x.e.dd<0?'hace '+(-x.e.dd)+' d':'hoy'):'en '+x.e.dd+' d'}</td></tr>`;
   const lst=[...urg,...pro];
   if(soloMios)window.TJ_ins={urg,pro};
-  document.getElementById('sum-in').innerHTML=lst.length?(urg.length?`<span class="warn">${urg.length} ya</span>`:'')+(urg.length&&pro.length?' · ':'')+(pro.length?pro.length+' pronto':''):'nada ✅';
-  q('list').innerHTML=lst.length?`<table>${lst.slice(0,6).map(fila).join('')}</table>${lst.length>6?`<div class="u mas">y ${lst.length-6} más en la app</div>`:''}`:'<p class="empty">Nada para comprar en los próximos 15 días. ✅</p>';
+  document.getElementById('sum-in').innerHTML=lst.length?(urg.length?urg.length+' ya':'')+(pro.length?' · '+pro.length+' pronto':''):'nada';
+  const card=x=>{const ya=x.e.tipo==='comprar';const d=ya?(x.e.dd<0?-x.e.dd:0):x.e.dd;
+    return `<div class="icard ${ya?'ya':'pr'}"><div class="iinfo"><div class="inom">${esc(x.i.nombre)}</div><div class="u">${esc(x.i.proveedor||x.i.sector)}</div></div>
+      <div class="idias"><b>${ya?(d?d:'hoy'):d}</b><span>${ya?(d?'días atrasado':''):'días restan'}</span></div></div>`;};
+  q('list').innerHTML=lst.length?`<div class="icards">${lst.slice(0,6).map(card).join('')}</div>${lst.length>6?`<div class="u mas">y ${lst.length-6} más en la app</div>`:''}`:'<p class="okmsg">✅ Nada para comprar en los próximos 15 días.</p>';
 }
 let cargando=false;
 async function cargar(){
