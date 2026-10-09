@@ -402,16 +402,6 @@ function go(){
     });
   }
 
-  // ── Extrusora PET Chivilcoy
-  if(T){
-    const ult=T.prods.map(b=>({b,t:b.timestamp?new Date(b.timestamp):null})).filter(x=>x.t&&!isNaN(x.t)).sort((a,b)=>b.t-a.t)[0];
-    const kgHoy=T.prods.filter(b=>b.fecha===hoy).reduce((s,b)=>s+(+b.kg||0),0);
-    const t={nm:'PET Chivilcoy',st:'off',big:n0(kgHoy)+' kg',big2:'hoy'};
-    if(ult){const p=T.peds.find(x=>x.id===ult.b.pedidoId)||{};const m=Math.round((now-ult.t)/60000);
-      Object.assign(t,{que:p.cliente||'—',que2:(p.medida||'')+(p.destinoCodigo==='T'?' · para termo':p.destinoCodigo==='L'?' · para laminar':''),sub:'Última bobina hace '+durT(m),warn:m>60,st:m>60?'stop':'ok',badge:p.destinoCodigo==='T'||p.destinoCodigo==='L'?'Para Lanús':''});}
-    else t.sub='Sin producción cargada';
-    tiles.push(t);
-  }
   if(tiles.length)el('maqs').innerHTML=tiles.map(tile).join('');
 
 
@@ -428,7 +418,11 @@ function go(){
     it.push({f:p.fechaEntrega||'',area:p.destinoCodigo==='T'?'PET→Termo':'PET→Lam',cls:p.destinoCodigo==='T'?'tp':'tl',cli:p.cliente||p.producto,det:p.medida||'',cant:n0(x.pend)+' kg',est:`<span class="st mid">producido ${x.ped?Math.round(x.real/x.ped*100):0}%</span>`});});
   if(E){
     const lrOC=L?L.ocs.filter(o=>o.estado==='abierta'):[];
-    E.forEach(x=>{const o=x.o;const lr=lrOC.find(z=>String(z.nro).trim()===String(o.num).trim());
+    // clientes directos (van tal cual desde Chivilcoy, sin pasar por Lanús): misma lista que Laminado y Refilado ⚙
+    const DIR=(L&&L.params&&Array.isArray(L.params.directos))?L.params.directos:['Blibox','Laboreau'];
+    const nrm=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+    const esDir=c=>DIR.some(d=>nrm(c).includes(nrm(d).slice(0,6)));
+    E.filter(x=>!esDir(x.o.cli)).forEach(x=>{const o=x.o;const lr=lrOC.find(z=>String(z.nro).trim()===String(o.num).trim());
       let est=`<span class="st mid">entregado ${o.kg?Math.round(x.e/o.kg*100):0}%</span>`;
       if(lr&&L){const fin=L.finales.filter(f=>f.ocId===lr.id&&f.estado==='en stock').reduce((s,f)=>s+(+f.kg||0),0);if(fin>0)est=`<span class="st ok">${n0(fin)} kg listos</span>`;}
       it.push({f:o.fe||'',area:x.l==='pet'?'PET':'PET/PE',cls:x.l==='pet'?'tq':'tl',cli:o.cli,det:(o.art||'')+(o.num?' · OC '+o.num:''),cant:n0(x.saldo)+' kg',est});});
