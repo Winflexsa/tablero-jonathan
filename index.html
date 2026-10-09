@@ -266,6 +266,22 @@ body{font:600 13px/1.3 Nunito,system-ui,sans-serif;color:var(--ink);font-variant
 @media (max-width:900px){#tab{grid-template-columns:1fr;grid-template-areas:"maq" "stk" "ped" "inf" "cron" "ins"}.stk3{grid-template-columns:1fr}.stk3>div+div{border-left:0;padding-left:0}}
 #tab{min-height:calc(100vh - 48px);grid-template-rows:auto auto 1fr}
 @media (max-width:900px){#tab{min-height:0;grid-template-rows:auto}}
+
+/* ajustes: sin cronograma PET, pedidos 2 por área, informes chicos */
+#tab{grid-template-areas:"maq maq maq" "stk stk cron" "ped ped inf" "ped ped ins";grid-template-rows:auto auto auto 1fr}
+@media (max-width:900px){#tab{grid-template-areas:"maq" "stk" "ped" "inf" "cron" "ins";grid-template-rows:auto}}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px}
+.pblk .ph{display:flex;align-items:center;gap:8px;margin-bottom:1px}
+.pblk .ph .ar{font-size:11px;padding:2px 8px}
+.pblk .ut td{padding:3px 0}
+#p-inf h2,#p-ins h2{font-size:13px;margin-bottom:3px}
+.inf{padding:3px 0}.inf .ic{font-size:13px}
+.inf .tx{font-size:12px;-webkit-line-clamp:1}
+.inf.urg{padding:3px 6px}
+#p-inf .okmsg{font-size:12.5px}
+#p-stk .chip .p{font-size:26px}#p-stk .g4 .chip .p{font-size:22px}
+#p-stk .chip{padding:7px 10px}
+#p-stk .grid{grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:6px}
 </style>
 </head>
 <body>
@@ -288,13 +304,12 @@ body{font:600 13px/1.3 Nunito,system-ui,sans-serif;color:var(--ink);font-variant
 <section class="pan crw" id="p-cron"><h2>Cronograma</h2>
  <div class="nav"><button id="cr-prev" title="Día anterior">‹</button><span class="dl" id="cr-dia"></span><button id="cr-hoy" title="Volver a hoy">Hoy</button><button id="cr-next" title="Día siguiente">›</button></div>
  <div class="sh">Termoformado</div><div id="cr-t"><p class="empty">Cargando…</p></div>
- <div class="sh">PET Chivilcoy</div><div id="cr-p"><p class="empty">Cargando…</p></div>
  <div class="sh">Laminado · Refilado</div><div id="cr-l"><p class="empty">Cargando…</p></div>
 </section>
 
-<section class="pan" id="p-ped"><h2>Pedidos urgentes<span class="tur">vencidos y próximos 3 días</span></h2><div id="urg"><p class="empty">Cargando…</p></div></section>
+<section class="pan" id="p-ped"><h2>Pedidos más urgentes<span class="tur">los 2 más atrasados de cada área</span></h2><div id="urg"><p class="empty">Cargando…</p></div></section>
 
-<section class="pan" id="p-inf"><h2>Informes de turno · termoformado<span class="tur" id="inf-n"></span></h2><div id="infs"><p class="empty">Cargando…</p></div></section>
+<section class="pan" id="p-inf"><h2>Informes de turno · termo<span class="tur" id="inf-n"></span></h2><div id="infs"><p class="empty">Cargando…</p></div></section>
 
 <section class="pan" id="p-ins"><h2>Insumos a comprar<span class="tur">responsable JS</span></h2><div id="in-list"><p class="empty">Cargando…</p></div></section>
 
@@ -302,7 +317,7 @@ body{font:600 13px/1.3 Nunito,system-ui,sans-serif;color:var(--ink);font-variant
 
 <!-- contenedores de los módulos que el tablero no muestra (se mantienen para que la lógica de cada app corra igual) -->
 <div hidden>
-<div id="turno"></div><span id="tur"></span><div id="lr-maqs"></div><span id="lr-fecha"></span><div id="maq-pet"></div><div id="dec"></div>
+<div id="turno"></div><span id="tur"></span><div id="lr-maqs"></div><span id="lr-fecha"></span><div id="maq-pet"></div><div id="dec"></div><div id="cr-p"></div>
 <div id="alerts"></div><span id="upd"></span><button id="btn-r"></button>
 <span id="pl-upd"></span><button id="pl-btn"></button><div id="pl-kpi"></div><div id="pl-maq"></div><div id="pl-list"></div><b id="sum-pl"></b>
 <span id="lr-upd"></span><button id="lr-btn"></button><div id="lr-det"></div><div id="lr-ocs"></div><b id="sum-lroc"></b>
@@ -418,12 +433,15 @@ function go(){
       if(lr&&L){const fin=L.finales.filter(f=>f.ocId===lr.id&&f.estado==='en stock').reduce((s,f)=>s+(+f.kg||0),0);if(fin>0)est=`<span class="st ok">${n0(fin)} kg listos</span>`;}
       it.push({f:o.fe||'',area:x.l==='pet'?'PET':'PET/PE',cls:x.l==='pet'?'tq':'tl',cli:o.cli,det:(o.art||'')+(o.num?' · OC '+o.num:''),cant:n0(x.saldo)+' kg',est});});
   }
-  const urg=it.filter(x=>x.f&&dias(x.f,hoy)<=3).sort((a,b)=>a.f<b.f?-1:a.f>b.f?1:0);
-  const MAX=6;
-  const fila=x=>{const d=dias(x.f,hoy);
-    return `<tr><td class="fd ${d<0?'bad':'mid'}">${dmy(x.f)}<small>${d<0?'hace '+(-d)+' d':d===0?'hoy':'en '+d+' d'}</small></td>
-      <td><span class="ar ${x.cls}">${esc(x.area)}</span> <b>${esc(x.cli||'—')}</b><div class="u">${esc(x.det)}</div></td><td class="r"><b>${x.cant}</b><div>${x.est}</div></td></tr>`;};
-  if(termoOK||T||E)el('urg').innerHTML=urg.length?`<table class="ut">${urg.slice(0,MAX).map(fila).join('')}</table>${urg.length>MAX?`<div class="u mas">y ${urg.length-MAX} más · ver en cada app</div>`:''}`:'<p class="okmsg">✅ Sin pedidos vencidos ni para los próximos 3 días.</p>';
+  // 2 por área, del más atrasado al más nuevo (los sin fecha al final)
+  const AREAS=['Termo','PET→Termo','PET→Lam','PET/PE','PET'];
+  const ord=(a,b)=>(a.f||'9')<(b.f||'9')?-1:(a.f||'9')>(b.f||'9')?1:0;
+  const fila=x=>{const d=x.f?dias(x.f,hoy):null;
+    return `<tr><td class="fd ${d!=null&&d<0?'bad':d!=null&&d<=3?'mid':''}">${x.f?dmy(x.f):'s/f'}<small>${d==null?'':d<0?'hace '+(-d)+' d':d===0?'hoy':'en '+d+' d'}</small></td>
+      <td><b>${esc(x.cli||'—')}</b><div class="u">${esc(x.det)}</div></td><td class="r"><b>${x.cant}</b><div>${x.est}</div></td></tr>`;};
+  const bloques=AREAS.map(ar=>{const a=it.filter(x=>x.area===ar).sort(ord);if(!a.length)return '';const v=a.filter(x=>x.f&&x.f<hoy).length;
+    return `<div class="pblk"><div class="ph"><span class="ar ${a[0].cls}">${esc(ar)}</span><span class="u">${a.length} pendiente${a.length>1?'s':''}${v?` · <b class="warn">${v} vencido${v>1?'s':''}</b>`:''}</span></div><table class="ut">${a.slice(0,2).map(fila).join('')}</table></div>`;}).join('');
+  if(termoOK||T||E)el('urg').innerHTML=bloques?`<div class="pgrid">${bloques}</div>`:'<p class="okmsg">✅ Sin pedidos pendientes.</p>';
 
   // ── Informes de turno de termoformado (pendientes de resolver)
   if(termoOK){
@@ -431,7 +449,7 @@ function go(){
     const pend=(DB.informes||[]).filter(i=>i.estado!=='resuelto').sort((a,b)=>(b.urg?1:0)-(a.urg?1:0)||String(b.ts||b.mod||'').localeCompare(String(a.ts||a.mod||'')));
     const nuevos=pend.filter(i=>!i.vistoTs&&i.estado!=='visto').length;
     el('inf-n').innerHTML=pend.length?`${pend.length} pendiente${pend.length>1?'s':''}${nuevos?` · <b class="warn">${nuevos} sin leer</b>`:''}`:'';
-    const MI=5;
+    const MI=3;
     el('infs').innerHTML=pend.length?pend.slice(0,MI).map(i=>`<div class="inf ${i.urg?'urg':''}"><span class="ic">${CAT[i.cat]||'📝'}</span><div class="it"><div class="tx">${i.urg?'<b class="warn">URGENTE · </b>':''}${esc(i.texto||'')}</div>
       <div class="u">${dmy(i.fecha||'')} ${esc(i.hora||'')} · turno ${esc(i.turno||'')}${i.por?' · '+esc(i.por):''}${i.prod?' · '+esc(i.prod):''} · <span class="${!i.vistoTs&&i.estado!=='visto'?'warn':''}">${!i.vistoTs&&i.estado!=='visto'?'sin leer':'visto'}</span></div></div></div>`).join('')+(pend.length>MI?`<div class="u mas">y ${pend.length-MI} más en la app</div>`:'')
       :'<p class="okmsg">✅ Sin informes pendientes.</p>';
