@@ -193,40 +193,62 @@ details summary::before{content:"▸ "}details[open] summary::before{content:"�
 #top img{height:20px}
 #top span{margin-left:auto;font-weight:700;font-size:12px;color:var(--mut)}
 
-/* ---- tablero de decisión: una pantalla, 3 columnas ---- */
-html,body{height:100%}
-body{font:600 12.5px/1.3 Nunito,system-ui,sans-serif;color:var(--ink);font-variant-numeric:tabular-nums}
+
+/* ---- tablero: producción grande arriba, stock y cronograma, abajo pedidos / informes / insumos ---- */
+body{font:600 13px/1.3 Nunito,system-ui,sans-serif;color:var(--ink);font-variant-numeric:tabular-nums}
 #top{display:flex;align-items:center;gap:10px;padding:8px 12px 6px;flex-wrap:wrap}
 #top #top-f{margin-left:0;font-weight:700;font-size:12.5px;color:var(--mut);text-transform:capitalize}
 #estado{margin-left:auto;font-size:11px;font-weight:700;color:var(--mut);display:flex;align-items:center;gap:3px;flex-wrap:wrap}
 #estado .dot{margin:0 1px 0 6px}
 #top button{font:800 12px Nunito,system-ui,sans-serif;border:0;background:var(--gd);color:#fff;border-radius:999px;padding:4px 12px;cursor:pointer}
-#tab{display:grid;gap:8px;padding:0 10px 10px;grid-template-columns:1fr 1.25fr 1fr;
- grid-template-areas:"dec dec dec" "maq ped cron" "stk ped ins";grid-template-rows:auto 1fr auto}
-#p-dec{grid-area:dec}#p-maq{grid-area:maq}#p-ped{grid-area:ped}#p-cron{grid-area:cron}#p-stk{grid-area:stk}#p-ins{grid-area:ins}
+#tab{display:grid;gap:8px;padding:0 10px 10px;grid-template-columns:1fr 1fr 1fr;
+ grid-template-areas:"maq maq maq" "stk stk cron" "ped inf ins";grid-template-rows:auto auto auto}
+#p-maq{grid-area:maq}#p-stk{grid-area:stk}#p-cron{grid-area:cron}#p-ped{grid-area:ped}#p-inf{grid-area:inf}#p-ins{grid-area:ins}
 .pan{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 11px;min-width:0;box-shadow:0 2px 10px rgba(10,94,56,.06)}
-.pan h2{font-size:13.5px;font-weight:800;color:var(--gd);margin-bottom:6px;display:flex;align-items:baseline;gap:8px}
+.pan h2{font-size:14px;font-weight:800;color:var(--gd);margin-bottom:6px;display:flex;align-items:baseline;gap:8px}
 @media (prefers-color-scheme:dark){.pan h2{color:var(--g)}}
-.pan h2 .tur{margin-left:auto;font-size:11px;font-weight:700;color:var(--mut)}
-.pan .sh{font-size:11px;font-weight:800;color:var(--mut);text-transform:uppercase;letter-spacing:.03em;margin:6px 0 3px}
-.pan .sh:first-of-type{margin-top:0}
-/* para decidir */
-#p-dec{border-left:5px solid var(--gd)}
-.dec{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:4px 12px}
-.dec li{padding:4px 9px;border-radius:9px;font-size:12.5px;font-weight:600}
-.dec li.bad{background:var(--badl);border-left:4px solid var(--bad)}
-.dec li.mid{background:var(--midl);border-left:4px solid var(--mid)}
+.pan h2 .tur{margin-left:auto;font-size:11.5px;font-weight:700;color:var(--mut)}
+.pan .sh{font-size:11px;font-weight:800;color:var(--mut);text-transform:uppercase;letter-spacing:.03em;margin:0 0 4px}
 .okmsg{color:var(--g);font-weight:800;font-size:13.5px}
 .mas{margin-top:4px}
-/* máquinas */
-.mrow+.mrow{margin-top:7px;padding-top:7px;border-top:1px solid var(--line)}
-.mt{font-size:11px;font-weight:800;color:var(--mut);text-transform:uppercase;letter-spacing:.03em;margin-bottom:3px}
-.mt .u{text-transform:none;letter-spacing:0}
-#turno .pct{font-size:20px}#turno .pname{font-size:13.5px}
-#maq-pet .pname{font-size:13.5px}#maq-pet .mkg{font-weight:800;font-size:13.5px;white-space:nowrap}
-.lw .mq+.mq{margin-top:4px;padding-top:4px}
+/* producción: tarjetas grandes por máquina */
+#p-maq{background:transparent;border:0;box-shadow:none;padding:0}
+#p-maq h2{padding:0 2px}
+.maqs{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
+.mtile{background:var(--card);border:1px solid var(--line);border-top:5px solid var(--g);border-radius:14px;padding:9px 12px;min-width:0;box-shadow:0 2px 10px rgba(10,94,56,.06)}
+.mtile.slow{border-top-color:var(--mid)}.mtile.stop{border-top-color:var(--bad);background:color-mix(in srgb,var(--badl) 45%,var(--card))}.mtile.off{border-top-color:var(--track)}
+.mh{display:flex;align-items:center;gap:6px}
+.mh .sd{width:9px;height:9px;border-radius:50%;background:var(--g);box-shadow:0 0 0 3px var(--gl)}
+.mtile.slow .sd{background:var(--mid);box-shadow:0 0 0 3px var(--midl)}.mtile.stop .sd{background:var(--bad);box-shadow:0 0 0 3px var(--badl)}.mtile.off .sd{background:var(--track);box-shadow:none}
+.mn{font-size:12px;font-weight:800;color:var(--mut);text-transform:uppercase;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mb{margin-left:auto;font-size:10.5px;font-weight:800;background:var(--gl);color:var(--gdd);border-radius:999px;padding:1px 7px;white-space:nowrap}
+.mw{font-size:17px;font-weight:800;color:var(--gris);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mw .u{font-size:12px}
+.mbig{display:flex;align-items:baseline;gap:6px;margin-top:1px}
+.mbig b{font-size:34px;font-weight:800;line-height:1.05}
+.mbig small{font-size:12.5px;font-weight:700;color:var(--mut)}
+.mbar{position:relative;height:8px;background:var(--track);border-radius:999px;margin:5px 0 3px}
+.mbar i{display:block;height:100%;border-radius:999px}
+.mbar b{position:absolute;top:-2px;width:3px;height:12px;border-radius:999px;background:var(--ink);opacity:.55;margin-left:-1.5px}
+.ms{font-size:12px;color:var(--mut);font-weight:700}
+.ms.warn{color:var(--bad)}
+.mtile.off .mbig b{color:var(--mut)!important}
+/* stock */
+.stk3{display:grid;grid-template-columns:1fr 1fr 1.25fr;gap:14px}
+.stk3>div+div{border-left:1px solid var(--line);padding-left:14px}
+#p-stk .grid{grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:5px}
+#p-stk .chip{padding:5px 9px;border-radius:11px}
+#p-stk .chip .n{font-size:12px}
+#p-stk .chip .p{font-size:21px}
+#p-stk .chip .u{font-size:11px}
+#p-stk .lw .ptitle{font-size:11px;font-weight:800;color:var(--mut);text-transform:uppercase;letter-spacing:.03em;margin:0 0 4px}
+#p-stk .g4{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+#p-stk .g4 .chip .p{font-size:19px}
+/* cronograma */
+.crw .nav{margin-bottom:5px}
+.crw .sh{margin-top:6px}
 /* pedidos urgentes */
-.ut td{padding:5px 0}
+.ut td{padding:4px 0}
 .ut td.fd{width:58px;font-weight:800;font-size:13px;white-space:nowrap}
 .ut td.fd small{display:block;font-size:10.5px;font-weight:700;color:var(--mut)}
 .ut td.fd.bad,.ut td.fd.bad small{color:var(--bad)}.ut td.fd.mid{color:var(--mid)}
@@ -234,19 +256,16 @@ body{font:600 12.5px/1.3 Nunito,system-ui,sans-serif;color:var(--ink);font-varia
 .ar.tt{background:var(--gl);color:var(--gdd)}.ar.tp{background:#e3effa;color:#2a5f8f}.ar.tl{background:var(--midl);color:var(--mid)}.ar.tq{background:#efe6fa;color:#6a3fa0}
 .st{display:inline-block;font-size:10.5px;font-weight:800;border-radius:999px;padding:0 6px;margin-top:2px;white-space:nowrap}
 .st.ok{background:var(--gl);color:var(--gdd)}.st.bad{background:var(--badl);color:var(--bad)}.st.mid{background:var(--midl);color:var(--mid)}
-/* stock */
-.grid{grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:4px}
-.chip{padding:3px 7px;border-radius:10px}.chip .p{font-size:15px}
-.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}.g4 .chip .p{font-size:14px}
-#p-stk .lw .ptitle{font-size:11px;font-weight:800;color:var(--mut);text-transform:uppercase;letter-spacing:.03em;margin:6px 0 3px}
-/* cronograma */
-.crw .nav{margin-bottom:4px}
-/* pantallas angostas (tablet vertical / celular): una columna */
-@media (max-width:900px){#tab{grid-template-columns:1fr;grid-template-areas:"dec" "maq" "ped" "stk" "cron" "ins";grid-template-rows:auto}.dec{grid-template-columns:1fr}}
-#tab{gap:7px}.pan{padding:7px 10px}.pan h2{margin-bottom:4px}
-.mrow+.mrow{margin-top:5px;padding-top:5px}
-.ut td{padding:4px 0}
-#p-stk .sh,#p-stk .lw .ptitle{margin:4px 0 2px}
+/* informes */
+.inf{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--line)}
+.inf:last-of-type{border-bottom:0}
+.inf .ic{font-size:16px;line-height:1.2}
+.inf .it{min-width:0}.inf .tx{font-size:12.5px;font-weight:700;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.inf.urg{background:var(--badl);border-radius:9px;padding:5px 7px;border-bottom:0;margin-bottom:3px}
+/* pantallas angostas: una columna */
+@media (max-width:900px){#tab{grid-template-columns:1fr;grid-template-areas:"maq" "stk" "ped" "inf" "cron" "ins"}.stk3{grid-template-columns:1fr}.stk3>div+div{border-left:0;padding-left:0}}
+#tab{min-height:calc(100vh - 48px);grid-template-rows:auto auto 1fr}
+@media (max-width:900px){#tab{min-height:0;grid-template-rows:auto}}
 </style>
 </head>
 <body>
@@ -256,35 +275,34 @@ body{font:600 12.5px/1.3 Nunito,system-ui,sans-serif;color:var(--ink);font-varia
 
 <main id="tab">
 
-<section class="pan" id="p-dec"><h2>⚡ Para decidir ahora</h2><div id="dec"><p class="empty">Cargando…</p></div></section>
+<section class="pan" id="p-maq"><h2>Producción ahora<span class="tur" id="maq-t"></span></h2><div id="maqs" class="maqs"><p class="empty">Cargando…</p></div></section>
 
-<section class="pan" id="p-maq"><h2>🏭 Máquinas ahora<span class="tur" id="tur"></span></h2>
- <div class="mrow"><div class="mt">Termoformadora</div><div id="turno"><p class="empty">Cargando…</p></div></div>
- <div class="mrow lw"><div class="mt">Laminado · Refilado <span class="u" id="lr-fecha"></span></div><div id="lr-maqs"><p class="empty">Cargando…</p></div></div>
- <div class="mrow"><div class="mt">Extrusora PET Chivilcoy</div><div id="maq-pet"><p class="empty">Cargando…</p></div></div>
+<section class="pan" id="p-stk"><h2>Stock</h2>
+ <div class="stk3">
+  <div><div class="sh">Termoformado · producto terminado</div><div id="stock"><p class="empty">Cargando…</p></div></div>
+  <div><div class="sh">Bobinas PET para termoformado</div><div id="bpet"><p class="empty">Cargando…</p></div></div>
+  <div class="lw"><div id="lr-stk"><p class="empty">Cargando…</p></div></div>
+ </div>
 </section>
 
-<section class="pan" id="p-ped"><h2>📋 Pedidos más urgentes<span class="tur">vencidos y próximos, de todas las áreas</span></h2><div id="urg"><p class="empty">Cargando…</p></div></section>
-
-<section class="pan crw" id="p-cron"><h2>🗓 Cronograma</h2>
+<section class="pan crw" id="p-cron"><h2>Cronograma</h2>
  <div class="nav"><button id="cr-prev" title="Día anterior">‹</button><span class="dl" id="cr-dia"></span><button id="cr-hoy" title="Volver a hoy">Hoy</button><button id="cr-next" title="Día siguiente">›</button></div>
  <div class="sh">Termoformado</div><div id="cr-t"><p class="empty">Cargando…</p></div>
  <div class="sh">PET Chivilcoy</div><div id="cr-p"><p class="empty">Cargando…</p></div>
  <div class="sh">Laminado · Refilado</div><div id="cr-l"><p class="empty">Cargando…</p></div>
 </section>
 
-<section class="pan" id="p-stk"><h2>📦 Stock</h2>
- <div class="sh">Termoformado · producto terminado</div><div id="stock"><p class="empty">Cargando…</p></div>
- <div class="sh">Bobinas PET para termoformado</div><div id="bpet"><p class="empty">Cargando…</p></div>
- <div class="lw"><div id="lr-stk"></div></div>
-</section>
+<section class="pan" id="p-ped"><h2>Pedidos urgentes<span class="tur">vencidos y próximos 3 días</span></h2><div id="urg"><p class="empty">Cargando…</p></div></section>
 
-<section class="pan" id="p-ins"><h2>🧰 Insumos a comprar<span class="tur">responsable JS</span></h2><div id="in-list"><p class="empty">Cargando…</p></div></section>
+<section class="pan" id="p-inf"><h2>Informes de turno · termoformado<span class="tur" id="inf-n"></span></h2><div id="infs"><p class="empty">Cargando…</p></div></section>
+
+<section class="pan" id="p-ins"><h2>Insumos a comprar<span class="tur">responsable JS</span></h2><div id="in-list"><p class="empty">Cargando…</p></div></section>
 
 </main>
 
 <!-- contenedores de los módulos que el tablero no muestra (se mantienen para que la lógica de cada app corra igual) -->
 <div hidden>
+<div id="turno"></div><span id="tur"></span><div id="lr-maqs"></div><span id="lr-fecha"></span><div id="maq-pet"></div><div id="dec"></div>
 <div id="alerts"></div><span id="upd"></span><button id="btn-r"></button>
 <span id="pl-upd"></span><button id="pl-btn"></button><div id="pl-kpi"></div><div id="pl-maq"></div><div id="pl-list"></div><b id="sum-pl"></b>
 <span id="lr-upd"></span><button id="lr-btn"></button><div id="lr-det"></div><div id="lr-ocs"></div><b id="sum-lroc"></b>
@@ -295,7 +313,7 @@ body{font:600 12.5px/1.3 Nunito,system-ui,sans-serif;color:var(--ink);font-varia
 </div>
 
 <script>
-// ══════════ Paneles del tablero: "Para decidir ahora", "Máquinas" (PET) y "Pedidos más urgentes" ══════════
+// ══════════ Paneles del tablero: Producción ahora, Pedidos urgentes e Informes de turno ══════════
 (()=>{
 const el=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -304,106 +322,120 @@ const ymdL=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+Str
 const dmy=s=>s?s.slice(8,10)+'/'+s.slice(5,7):'';
 const durT=m=>m<60?m+' min':m<1440?Math.floor(m/60)+' h '+String(m%60).padStart(2,'0'):Math.floor(m/1440)+' d';
 const dias=(f,hoy)=>Math.round((new Date(f+'T12:00')-new Date(hoy+'T12:00'))/864e5);
+const col=e=>e==null?'var(--gris)':e>=90?'var(--g)':e>=70?'var(--mid)':'var(--bad)';
 let tm=null;
 window.TJgo=()=>{clearTimeout(tm);tm=setTimeout(go,150);};
 setInterval(()=>window.TJgo(),60000);
 
+// tarjeta de máquina: estado ok / lenta / parada / sin producción
+function tile(t){
+  return `<div class="mtile ${t.st}">
+    <div class="mh"><i class="sd"></i><span class="mn">${esc(t.nm)}</span>${t.badge?`<span class="mb">${t.badge}</span>`:''}</div>
+    <div class="mw">${t.que?esc(t.que):'<span class="u">—</span>'}${t.que2?` <span class="u">${esc(t.que2)}</span>`:''}</div>
+    <div class="mbig"><b style="color:${t.pc!=null?col(t.pc):'var(--ink)'}">${t.big}</b>${t.big2?`<small>${t.big2}</small>`:''}</div>
+    ${t.bar!=null?`<div class="mbar"><i style="width:${Math.min(100,t.bar)}%;background:${col(t.pc)}"></i>${t.mark!=null?`<b style="left:${(t.mark*100).toFixed(1)}%"></b>`:''}</div>`:''}
+    <div class="ms ${t.warn?'warn':''}">${t.sub||''}</div></div>`;
+}
+
 function go(){
   const now=new Date(),hoy=ymdL(now);
-  const dec=[];   // {n:nivel 0 rojo / 1 amarillo, t:texto}
   const termoOK=typeof DB!=='undefined'&&DB.bobinas&&(DB.bobinas.length||DB.pedidos.length);
-  const T=window.TJ_pet,L=window.TJ_lr,E=window.TJ_ep,I=window.TJ_ins;
+  const T=window.TJ_pet,L=window.TJ_lr,E=window.TJ_ep;
+  const tiles=[];
 
-  // ── Termoformado: turno, paradas, informes
+  // ── Termoformadora
   if(termoOK){
     const tr=turnoReloj(now);
     const bobs=DB.bobinas.filter(b=>b.fecha===tr.fecha&&tr.grupo.includes(b.turno));
-    const minTurno=Math.round((now-tr.ini)/60000);
-    DB.eventos.filter(e=>e.fecha===tr.fecha&&tr.grupo.includes(e.turno)&&!e.hFin&&e.paro!==false).forEach(e=>{const t=evTipo(e.tipo),m=minDesde(e.fecha,e.hIni,now);
-      dec.push({n:0,t:`<b>Termoformadora parada</b> · ${esc(t.lbl)}${m!=null?' hace '+durT(m):''}${e.nota?' · '+esc(e.nota):''}`});});
-    if(!bobs.length){if(minTurno>60)dec.push({n:0,t:`<b>Termoformadora sin carga</b> en el turno ${esc(tr.nombre.toLowerCase())} (arrancó hace ${durT(minTurno)})`});}
-    else{
-      const ult=Math.max(...bobs.map(ordCarga));const m=Math.round((now-ult)/60000);
-      if(m>45)dec.push({n:0,t:`<b>Termoformadora</b>: última carga hace ${durT(m)}`});
-      const cnt={};bobs.forEach(b=>cnt[b.turno]=(cnt[b.turno]||0)+1);const tu=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0];
-      const frac=Math.max(0,Math.min(1,(now-tr.ini)/3600000/(HORAS[tu]||12)));
-      const pp={};bobs.forEach(b=>pp[b.prod]=(pp[b.prod]||0)+(b.uds||0));
-      Object.entries(pp).forEach(([p,u])=>{const esp=objetivoTurno(p,tu)*frac;if(esp>0&&u<esp*0.8)dec.push({n:1,t:`<b>${esc(p)} viene abajo del objetivo</b>: ${n0(u)} u, a esta hora deberían ir ${n0(esp)} (${Math.round(u/esp*100)}%)`});});
-    }
-    const sinVer=(DB.informes||[]).filter(i=>!i.vistoTs).length;
-    if(sinVer)dec.push({n:1,t:`<b>${sinVer} informe${sinVer>1?'s':''} de turno sin leer</b> en la app de termoformado`});
+    const par=DB.eventos.filter(e=>e.fecha===tr.fecha&&tr.grupo.includes(e.turno)&&!e.hFin&&e.paro!==false)[0];
+    const cnt={};bobs.forEach(b=>cnt[b.turno]=(cnt[b.turno]||0)+1);const tu=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0]||(tr.nombre==='Noche'?'N':'M2');
+    const frac=Math.max(0,Math.min(1,(now-tr.ini)/3600000/(HORAS[tu]||12)));
+    const t={nm:'Termoformadora',badge:'Turno '+tu,st:'ok'};
+    if(bobs.length){
+      const pp={};bobs.forEach(b=>{const x=pp[b.prod]||(pp[b.prod]={u:0,ult:0});x.u+=b.uds||0;x.ult=Math.max(x.ult,ordCarga(b));});
+      const [prod,d]=Object.entries(pp).sort((a,b)=>b[1].ult-a[1].ult)[0];
+      const obj=objetivoTurno(prod,tu);const e=obj?Math.round(d.u/obj*100):null;const m=Math.round((now-Math.max(...Object.values(pp).map(x=>x.ult)))/60000);
+      Object.assign(t,{que:prod,que2:Object.keys(pp).length>1?'+ '+(Object.keys(pp).length-1)+' prod.':'',big:e!=null?e+'%':n0(d.u),big2:e!=null?n0(d.u)+' / '+n0(obj)+' u':'u',pc:obj?Math.round(d.u/(obj*frac||1)*100):null,bar:e,mark:obj?frac:null,
+        sub:'Última carga hace '+durT(m),warn:m>45});
+      if(m>45)t.st='stop';else if(obj&&d.u<obj*frac*0.8)t.st='slow';
+    }else Object.assign(t,{big:'—',sub:'Sin carga en el turno',warn:(now-tr.ini)>3600e3,st:(now-tr.ini)>3600e3?'stop':'off'});
+    if(par){const ty=evTipo(par.tipo),m=minDesde(par.fecha,par.hIni,now);t.st='stop';t.sub=`⏸ PARADA: ${esc(ty.lbl)}${m!=null?' · hace '+durT(m):''}`;t.warn=true;}
+    tiles.push(t);
   }
 
-  // ── Pedidos urgentes (todas las áreas)
-  const it=[];
-  if(termoOK){
-    const peds=DB.pedidos.filter(p=>p.estado!=='Cancelado'&&pedPendiente(p)>0).sort((a,b)=>(a.entrega||'9')<(b.entrega||'9')?-1:1);
-    const disp={};PRODS.forEach(p=>disp[p]=Math.max(0,stockUds(p)));
-    // stock asignado a los pedidos en orden de fecha: dice si el stock alcanza o hay que producir
-    const faltaProd={};
-    peds.forEach(p=>{const pend=pedPendiente(p);const usa=Math.min(disp[p.prod]||0,pend);disp[p.prod]=(disp[p.prod]||0)-usa;const falta=pend-usa;
-      if(falta>0&&p.entrega&&dias(p.entrega,hoy)<=7)faltaProd[p.prod]=(faltaProd[p.prod]||0)+falta;
-      it.push({f:p.entrega||'',area:'Termo',cls:'tt',cli:p.cliente,det:p.prod+(p.caja?' x'+p.caja:'')+(p.oc?' · OC '+p.oc:''),cant:n0(pend)+' u',
-        est:falta>0?`<span class="st bad">producir ${n0(falta)} u</span>`:`<span class="st ok">stock cubre</span>`});});
-    Object.entries(faltaProd).forEach(([p,f])=>dec.push({n:0,t:`<b>${esc(p)}: faltan ${n0(f)} u</b> para pedidos vencidos o de los próximos 7 días (el stock no alcanza)`}));
-    // bobinas PET para lo que hay que producir
-    const usadas=new Set();DB.bobinas.forEach(b=>{if(b.partida&&b.nbob)usadas.add(bsKey(b.partida,b.nbob));});
-    const bp={};(DB.bobStock||[]).filter(x=>!usadas.has(bsKey(x.partida,x.nbob))&&!x.baja).forEach(x=>bp[x.prod]=(bp[x.prod]||0)+(+x.kg||0));
-    if((DB.bobStock||[]).length)Object.keys(faltaProd).forEach(p=>{if(!bp[p])dec.push({n:0,t:`<b>Sin bobinas PET para ${esc(p)}</b> y hay pedidos por producir — revisar envío desde Chivilcoy`});});
-  }
-  if(T){
-    T.filas.filter(x=>x.pend>0||x.kgCh>0).forEach(x=>{const p=x.p;const pct=x.ped?Math.round(x.real/x.ped*100):0;
-      it.push({f:p.fechaEntrega||'',area:p.destinoCodigo==='T'?'PET → Termo':'PET → Lam',cls:p.destinoCodigo==='T'?'tp':'tl',cli:p.cliente||p.producto,det:(p.medida||'')+(p.nroOP?' · OP '+p.nroOP:''),cant:n0(x.pend)+' kg',
-        est:`<span class="st ${x.pend?'mid':'ok'}">${x.pend?'producido '+pct+'%':'producido'}</span>${x.kgCh?` <span class="st mid">${n0(x.kgCh)} kg sin enviar</span>`:''}`});});
-  }
-  if(E){
-    const lrOC=L?L.ocs.filter(o=>o.estado==='abierta'):[];
-    E.forEach(x=>{const o=x.o;const lr=lrOC.find(z=>String(z.nro).trim()===String(o.num).trim()&&String(z.cliente||'').toLowerCase().slice(0,5)===String(o.cli||'').toLowerCase().slice(0,5));
-      let est=`<span class="st mid">entregado ${o.kg?Math.round(x.e/o.kg*100):0}%</span>`;
-      if(lr&&L){const fin=L.finales.filter(f=>f.ocId===lr.id&&f.estado==='en stock').reduce((s,f)=>s+(+f.kg||0),0);if(fin>0)est+=` <span class="st ok">${n0(fin)} kg listos</span>`;}
-      it.push({f:o.fe||'',area:x.l==='pet'?'PET':'PET/PE',cls:x.l==='pet'?'tq':'tl',cli:o.cli,det:(o.art||'')+(o.num?' · OC '+o.num:''),cant:n0(x.saldo)+' kg',est});});
-  }
-  it.sort((a,b)=>(a.f||'9')<(b.f||'9')?-1:(a.f||'9')>(b.f||'9')?1:0);
-  const venc=it.filter(x=>x.f&&x.f<hoy);
-  if(venc.length){const por={};venc.forEach(x=>por[x.area]=(por[x.area]||0)+1);dec.push({n:0,t:`<b>${venc.length} pedido${venc.length>1?'s':''} vencido${venc.length>1?'s':''}</b> · ${Object.entries(por).map(([a,n])=>a+' '+n).join(' · ')}`});}
-  const MAX=11;
-  const fila=x=>{const d=x.f?dias(x.f,hoy):null;
-    return `<tr><td class="fd ${d!=null&&d<0?'bad':d!=null&&d<=3?'mid':''}">${x.f?dmy(x.f):'s/f'}<small>${d==null?'':d<0?'hace '+(-d)+' d':d===0?'hoy':'en '+d+' d'}</small></td>
-      <td><span class="ar ${x.cls}">${esc(x.area)}</span> <b>${esc(x.cli||'—')}</b><div class="u">${esc(x.det)}</div></td><td class="r"><b>${x.cant}</b><div>${x.est}</div></td></tr>`;};
-  if(termoOK||T||E)el('urg').innerHTML=it.length?`<table class="ut">${it.slice(0,MAX).map(fila).join('')}</table>${it.length>MAX?`<div class="u mas">y ${it.length-MAX} pedidos más con entrega posterior · ver en cada app</div>`:''}`:'<p class="empty">Sin pedidos pendientes.</p>';
-
-  // ── Laminado / refilado: máquinas paradas y OC vencidas
+  // ── Laminadora y refiladoras (misma eficiencia que la app)
   if(L){
-    const hoyL=x=>x.createdAt&&ymdL(new Date(x.createdAt))===hoy;
-    const maqs=[['Laminadora',L.laminadas.filter(l=>!l.resto&&l.tipo!=='PET')],['Refiladora Verde',L.finales.filter(f=>f.maq==='Verde')],['Refiladora Gris',L.finales.filter(f=>f.maq==='Gris')]];
-    const h=now.getHours();
-    maqs.forEach(([nm,a])=>{const hh=a.filter(hoyL);if(!hh.length)return;const ult=Math.max(...hh.map(x=>new Date(x.createdAt)));const m=Math.round((now-ult)/60000);
-      if(m>90&&h>=7&&h<19)dec.push({n:1,t:`<b>${nm}</b>: sin cargas hace ${durT(m)}`});});
-    const vl=L.ocs.filter(o=>o.estado==='abierta'&&o.fecha&&o.fecha<hoy).filter(o=>{const fin=L.finales.filter(f=>f.ocId===o.id).reduce((s,f)=>s+(+f.kg||0),0);return (+o.kg||0)-fin>0;});
-    if(vl.length)dec.push({n:1,t:`<b>${vl.length} OC de laminado con fecha vencida</b> sin terminar: ${vl.slice(0,3).map(o=>esc(o.cliente)+' '+esc(o.nro)).join(', ')}${vl.length>3?'…':''}`});
+    const prm=L.params||{};const J=(()=>{const r=/^\d\d:\d\d-\d\d:\d\d$/.test(prm.jornada||'')?prm.jornada:'07:00-19:00';const [a,b]=r.split('-');const mm=s=>+s.slice(0,2)*60+ +s.slice(3);return{ini:mm(a),fin:mm(b)};})();
+    const ocOf=id=>L.ocs.find(o=>o.id===id)||{};
+    const objetivo=(ocId,proc)=>{const p=(L.catalogo||[]).find(x=>x.id===ocOf(ocId).prodId)||{};return (proc==='lam'?p.kgHoraLam:p.kgHoraRef)||(proc==='lam'?prm.khLam:prm.khRef)||null;};
+    const minOf=iso=>{const d=new Date(iso);return d.getHours()*60+d.getMinutes();};
+    const nowMin=now.getHours()*60+now.getMinutes();const sum=(a,f)=>a.reduce((s,x)=>s+(+f(x)||0),0);
+    [['Laminadora','lam',L.laminadas.filter(l=>!l.resto&&l.tipo!=='PET')],['Refiladora Verde','ref',L.finales.filter(f=>f.maq==='Verde')],['Refiladora Gris','ref',L.finales.filter(f=>f.maq==='Gris')]].forEach(([nm,proc,items])=>{
+      const hh=items.filter(x=>x.createdAt&&ymdL(new Date(x.createdAt))===hoy);
+      const ult=items.slice().sort((a,b)=>b.createdAt>a.createdAt?1:-1)[0];
+      const t={nm,st:'off'};
+      if(hh.length){
+        const kgH=sum(hh,x=>x.kg);const ts=hh.map(x=>minOf(x.createdAt));
+        const ini=Math.min(J.ini,...ts),fin=Math.max(Math.min(Math.max(J.fin,...ts),nowMin),...ts);const hrs=Math.max(0,fin-ini)/60;
+        let pk=0,pw=0;[...new Set(hh.map(x=>x.ocId))].forEach(o=>{const ob=objetivo(o,proc);if(!ob)return;const k=sum(hh.filter(x=>x.ocId===o),x=>x.kg)||1;pk+=ob*k;pw+=k;});
+        const ob=pw?pk/pw:null;const e=ob&&hrs?Math.round(kgH/hrs/ob*100):null;
+        const ul=hh.slice().sort((a,b)=>b.createdAt>a.createdAt?1:-1)[0];const o=ocOf(ul.ocId);const m=Math.round((now-new Date(ul.createdAt))/60000);
+        Object.assign(t,{que:o.cliente||'—',que2:o.nro?'OC '+o.nro:'',big:n0(kgH)+' kg',big2:e!=null?'· '+e+'%':'hoy',pc:e,sub:`${hh.length} bob hoy · última hace ${durT(m)}`,warn:m>90,st:m>90&&nowMin<J.fin?'stop':e!=null&&e<70?'slow':'ok'});
+        if(e!=null){t.big=e+'%';t.big2=n0(kgH)+' kg hoy';t.bar=e;}
+      }else Object.assign(t,{big:'—',sub:ult?'Sin producción hoy · última '+new Date(ult.createdAt).toLocaleDateString('es-AR',{day:'numeric',month:'numeric'}):'Sin registros'});
+      tiles.push(t);
+    });
   }
 
   // ── Extrusora PET Chivilcoy
   if(T){
     const ult=T.prods.map(b=>({b,t:b.timestamp?new Date(b.timestamp):null})).filter(x=>x.t&&!isNaN(x.t)).sort((a,b)=>b.t-a.t)[0];
     const kgHoy=T.prods.filter(b=>b.fecha===hoy).reduce((s,b)=>s+(+b.kg||0),0);
-    let h='';
+    const t={nm:'PET Chivilcoy',st:'off',big:n0(kgHoy)+' kg',big2:'hoy'};
     if(ult){const p=T.peds.find(x=>x.id===ult.b.pedidoId)||{};const m=Math.round((now-ult.t)/60000);
-      const mio=p.destinoCodigo==='T'?'para termo':p.destinoCodigo==='L'?'para laminar':'venta';
-      h=`<div class="prow"><span class="pname">${esc(p.cliente||'—')} <span class="u">${esc(p.medida||'')} · ${mio}</span></span><span class="mkg">${n0(kgHoy)} kg hoy</span></div><div class="sub ${m>60?'warn':''}">Última bobina hace ${durT(m)}</div>`;
-      if(m>60)dec.push({n:1,t:`<b>Extrusora PET Chivilcoy</b>: última bobina hace ${durT(m)}`});
-    }else h='<p class="empty">Sin producción cargada.</p>';
-    el('maq-pet').innerHTML=h;
-    const sinEnv=T.filas.reduce((s,x)=>s+x.kgCh,0);
-    if(sinEnv>=1000)dec.push({n:1,t:`<b>${n0(sinEnv)} kg en Chivilcoy listos para Lanús</b> sin enviar (${T.filas.reduce((s,x)=>s+x.palCh,0)} pallets)`});
+      Object.assign(t,{que:p.cliente||'—',que2:(p.medida||'')+(p.destinoCodigo==='T'?' · para termo':p.destinoCodigo==='L'?' · para laminar':''),sub:'Última bobina hace '+durT(m),warn:m>60,st:m>60?'stop':'ok',badge:p.destinoCodigo==='T'||p.destinoCodigo==='L'?'Para Lanús':''});}
+    else t.sub='Sin producción cargada';
+    tiles.push(t);
   }
+  if(tiles.length)el('maqs').innerHTML=tiles.map(tile).join('');
 
-  // ── Insumos
-  if(I&&I.urg.length)dec.push({n:1,t:`<b>Comprar ya:</b> ${I.urg.slice(0,4).map(x=>esc(x.i.nombre)).join(', ')}${I.urg.length>4?` y ${I.urg.length-4} más`:''}`});
 
-  // ── Render "Para decidir ahora"
-  dec.sort((a,b)=>a.n-b.n);
-  el('dec').innerHTML=dec.length?`<ul class="dec">${dec.slice(0,10).map(d=>`<li class="${d.n?'mid':'bad'}">${d.t}</li>`).join('')}</ul>${dec.length>10?`<div class="u mas">y ${dec.length-10} avisos más</div>`:''}`:'<p class="okmsg">✅ Todo en orden: máquinas cargando, sin vencidos ni faltantes.</p>';
+  // ── Pedidos urgentes: vencidos y próximos 3 días, de todas las áreas
+  const it=[];
+  if(termoOK){
+    const peds=DB.pedidos.filter(p=>p.estado!=='Cancelado'&&pedPendiente(p)>0).sort((a,b)=>(a.entrega||'9')<(b.entrega||'9')?-1:1);
+    const disp={};PRODS.forEach(p=>disp[p]=Math.max(0,stockUds(p)));
+    peds.forEach(p=>{const pend=pedPendiente(p);const usa=Math.min(disp[p.prod]||0,pend);disp[p.prod]=(disp[p.prod]||0)-usa;const falta=pend-usa;
+      it.push({f:p.entrega||'',area:'Termo',cls:'tt',cli:p.cliente,det:p.prod+(p.caja?' x'+p.caja:''),cant:n0(pend)+' u',
+        est:falta>0?`<span class="st bad">producir ${n0(falta)} u</span>`:`<span class="st ok">stock cubre</span>`});});
+  }
+  if(T)T.filas.filter(x=>x.pend>0).forEach(x=>{const p=x.p;
+    it.push({f:p.fechaEntrega||'',area:p.destinoCodigo==='T'?'PET→Termo':'PET→Lam',cls:p.destinoCodigo==='T'?'tp':'tl',cli:p.cliente||p.producto,det:p.medida||'',cant:n0(x.pend)+' kg',est:`<span class="st mid">producido ${x.ped?Math.round(x.real/x.ped*100):0}%</span>`});});
+  if(E){
+    const lrOC=L?L.ocs.filter(o=>o.estado==='abierta'):[];
+    E.forEach(x=>{const o=x.o;const lr=lrOC.find(z=>String(z.nro).trim()===String(o.num).trim());
+      let est=`<span class="st mid">entregado ${o.kg?Math.round(x.e/o.kg*100):0}%</span>`;
+      if(lr&&L){const fin=L.finales.filter(f=>f.ocId===lr.id&&f.estado==='en stock').reduce((s,f)=>s+(+f.kg||0),0);if(fin>0)est=`<span class="st ok">${n0(fin)} kg listos</span>`;}
+      it.push({f:o.fe||'',area:x.l==='pet'?'PET':'PET/PE',cls:x.l==='pet'?'tq':'tl',cli:o.cli,det:(o.art||'')+(o.num?' · OC '+o.num:''),cant:n0(x.saldo)+' kg',est});});
+  }
+  const urg=it.filter(x=>x.f&&dias(x.f,hoy)<=3).sort((a,b)=>a.f<b.f?-1:a.f>b.f?1:0);
+  const MAX=6;
+  const fila=x=>{const d=dias(x.f,hoy);
+    return `<tr><td class="fd ${d<0?'bad':'mid'}">${dmy(x.f)}<small>${d<0?'hace '+(-d)+' d':d===0?'hoy':'en '+d+' d'}</small></td>
+      <td><span class="ar ${x.cls}">${esc(x.area)}</span> <b>${esc(x.cli||'—')}</b><div class="u">${esc(x.det)}</div></td><td class="r"><b>${x.cant}</b><div>${x.est}</div></td></tr>`;};
+  if(termoOK||T||E)el('urg').innerHTML=urg.length?`<table class="ut">${urg.slice(0,MAX).map(fila).join('')}</table>${urg.length>MAX?`<div class="u mas">y ${urg.length-MAX} más · ver en cada app</div>`:''}`:'<p class="okmsg">✅ Sin pedidos vencidos ni para los próximos 3 días.</p>';
+
+  // ── Informes de turno de termoformado (pendientes de resolver)
+  if(termoOK){
+    const CAT={repuesto:'🔩',revisar:'🛠',rotura:'💥',insumos:'📦',calidad:'🔍',orden:'🧹',personal:'👥',otro:'✏️'};
+    const pend=(DB.informes||[]).filter(i=>i.estado!=='resuelto').sort((a,b)=>(b.urg?1:0)-(a.urg?1:0)||String(b.ts||b.mod||'').localeCompare(String(a.ts||a.mod||'')));
+    const nuevos=pend.filter(i=>!i.vistoTs&&i.estado!=='visto').length;
+    el('inf-n').innerHTML=pend.length?`${pend.length} pendiente${pend.length>1?'s':''}${nuevos?` · <b class="warn">${nuevos} sin leer</b>`:''}`:'';
+    const MI=5;
+    el('infs').innerHTML=pend.length?pend.slice(0,MI).map(i=>`<div class="inf ${i.urg?'urg':''}"><span class="ic">${CAT[i.cat]||'📝'}</span><div class="it"><div class="tx">${i.urg?'<b class="warn">URGENTE · </b>':''}${esc(i.texto||'')}</div>
+      <div class="u">${dmy(i.fecha||'')} ${esc(i.hora||'')} · turno ${esc(i.turno||'')}${i.por?' · '+esc(i.por):''}${i.prod?' · '+esc(i.prod):''} · <span class="${!i.vistoTs&&i.estado!=='visto'?'warn':''}">${!i.vistoTs&&i.estado!=='visto'?'sin leer':'visto'}</span></div></div></div>`).join('')+(pend.length>MI?`<div class="u mas">y ${pend.length-MI} más en la app</div>`:'')
+      :'<p class="okmsg">✅ Sin informes pendientes.</p>';
+  }
   el('top-upd').textContent=now.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
 }
 el('top-r').onclick=()=>['btn-r','pl-btn','lr-btn','ep-btn','in-btn','cr-btn'].forEach(i=>{const b=el(i);if(b&&b.onclick)b.onclick();else if(b)b.click();});
@@ -1110,7 +1142,7 @@ function render(){
   const lst=[...urg,...pro];
   if(soloMios)window.TJ_ins={urg,pro};
   document.getElementById('sum-in').innerHTML=lst.length?(urg.length?`<span class="warn">${urg.length} ya</span>`:'')+(urg.length&&pro.length?' · ':'')+(pro.length?pro.length+' pronto':''):'nada ✅';
-  q('list').innerHTML=lst.length?`<table>${lst.slice(0,10).map(fila).join('')}</table>${lst.length>10?`<details><summary class="u">Ver ${lst.length-10} más</summary><table>${lst.slice(10).map(fila).join('')}</table></details>`:''}`:'<p class="empty">Nada para comprar en los próximos 15 días. ✅</p>';
+  q('list').innerHTML=lst.length?`<table>${lst.slice(0,6).map(fila).join('')}</table>${lst.length>6?`<div class="u mas">y ${lst.length-6} más en la app</div>`:''}`:'<p class="empty">Nada para comprar en los próximos 15 días. ✅</p>';
 }
 let cargando=false;
 async function cargar(){
