@@ -304,6 +304,14 @@ body{font:600 13px/1.3 Nunito,system-ui,sans-serif;color:var(--ink);font-variant
 .idias span{font-size:9.5px;font-weight:800;color:var(--mut);text-transform:uppercase}
 .pcard{padding:5px 9px;margin-bottom:4px}.pfecha{flex-basis:38px;height:38px}.pfecha b{font-size:16px}
 .pgrid{gap:6px 14px}
+/* 4 pedidos por área: tarjetas compactas, 3 columnas */
+.pgrid{grid-template-columns:repeat(3,1fr);gap:4px 10px}
+.pblk .ph{margin-bottom:3px}
+.pcard{gap:7px;padding:3px 7px;margin-bottom:3px;border-radius:10px}
+.pfecha{flex-basis:32px;height:32px;border-radius:8px}.pfecha b{font-size:14px}.pfecha span{font-size:8.5px;margin-top:1px}
+.pcli{font-size:12.5px}.pinfo .u{font-size:10px}
+.pcant b{font-size:12.5px}.pcant .st{font-size:9.5px;margin-top:0}
+@media (max-width:1100px){.pgrid{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -329,7 +337,7 @@ body{font:600 13px/1.3 Nunito,system-ui,sans-serif;color:var(--ink);font-variant
  <div class="sh">Laminado · Refilado</div><div id="cr-l"><p class="empty">Cargando…</p></div>
 </section>
 
-<section class="pan" id="p-ped"><h2>Pedidos más urgentes<span class="tur">los 2 más atrasados de cada área</span></h2><div id="urg"><p class="empty">Cargando…</p></div></section>
+<section class="pan" id="p-ped"><h2>Pedidos más urgentes<span class="tur">los 4 más atrasados de cada área</span></h2><div id="urg"><p class="empty">Cargando…</p></div></section>
 
 <section class="pan" id="p-inf"><h2>Informes de turno · termo<span class="tur" id="inf-n"></span></h2><div id="infs"><p class="empty">Cargando…</p></div></section>
 
@@ -458,7 +466,7 @@ function go(){
       <div class="pinfo"><div class="pcli">${esc(x.cli||'—')}</div><div class="u">${esc(x.det)}${d==null?'':d<0?` · <b class="warn">hace ${-d} d</b>`:d===0?' · <b>hoy</b>':' · en '+d+' d'}</div></div>
       <div class="pcant"><b>${x.cant}</b>${x.est}</div></div>`;};
   const bloques=AREAS.map(ar=>{const a=it.filter(x=>x.area===ar).sort(ord);if(!a.length)return '';const v=a.filter(x=>x.f&&x.f<hoy).length;
-    return `<div class="pblk"><div class="ph"><span class="ar ${a[0].cls}">${esc(ar)}</span><span class="u">${a.length} pendiente${a.length>1?'s':''}${v?` · <b class="warn">${v} vencido${v>1?'s':''}</b>`:''}</span></div>${a.slice(0,2).map(card).join('')}</div>`;}).join('');
+    return `<div class="pblk"><div class="ph"><span class="ar ${a[0].cls}">${esc(ar)}</span><span class="u">${a.length} pendiente${a.length>1?'s':''}${v?` · <b class="warn">${v} vencido${v>1?'s':''}</b>`:''}</span></div>${a.slice(0,4).map(card).join('')}</div>`;}).join('');
   if(termoOK||T||E)el('urg').innerHTML=bloques?`<div class="pgrid">${bloques}</div>`:'<p class="okmsg">✅ Sin pedidos pendientes.</p>';
 
   // ── Informes de turno de termoformado (pendientes de resolver)
