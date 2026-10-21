@@ -244,6 +244,12 @@ body{font:600 13px/1.3 Nunito,system-ui,sans-serif;color:var(--ink);font-variant
 #p-stk .lw .ptitle{font-size:11px;font-weight:800;color:var(--mut);text-transform:uppercase;letter-spacing:.03em;margin:0 0 4px}
 #p-stk .g4{display:grid;grid-template-columns:1fr 1fr;gap:5px}
 #p-stk .g4 .chip .p{font-size:19px}
+.bp-grid{grid-template-columns:repeat(auto-fill,minmax(138px,1fr))!important}
+.chip.bp .u{line-height:1.3}.chip.bp .u b{color:var(--gdd)}
+.chip.bp-bad{background:var(--badl)}.chip.bp-mid{background:var(--midl)}
+.bp-pill{font-size:9.5px;font-weight:800;padding:1px 6px;border-radius:8px;margin-left:3px;vertical-align:1px;color:#fff}
+.bp-pill.bad{background:var(--bad)}.bp-pill.mid{background:var(--mid)}
+.bp-ok{color:var(--gd);font-weight:700}
 /* cronograma */
 .crw .nav{margin-bottom:5px}
 .crw .sh{margin-top:6px}
@@ -763,7 +769,8 @@ function limpiar(r){
     objetivos:(r.objetivos&&r.objetivos.prods)?r.objetivos:null,
     bobinas:drop(r.bobinas,r.bobinasBorradas),pallets:r.pallets||[],
     pedidos:drop(r.pedidos,r.pedidosBorrados),ajustes:drop(r.ajustes,r.ajustesBorrados),
-    stockConfig:r.stockConfig||{},eventos:drop(r.eventos,r.eventosBorrados),informes:drop(r.informes,r.informesBorrados),bobStock:drop(r.bobStock,r.bobStockBorrados)
+    stockConfig:r.stockConfig||{},eventos:drop(r.eventos,r.eventosBorrados),informes:drop(r.informes,r.informesBorrados),bobStock:drop(r.bobStock,r.bobStockBorrados),
+    cronograma:drop(r.cronograma,r.cronogramaBorrados),bobPedidos:drop(r.bobPedidos,r.bobPedidosBorrados)
   };
 }
 
@@ -818,18 +825,61 @@ function renderPed(){window.TJgo&&TJgo();}
 const bsNP=s=>String(s||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
 const bsNN=s=>{const d=String(s||'').replace(/\D/g,'').replace(/^0+/,'');return d||String(s||'').trim();};
 const bsKey=(p,n)=>bsNP(p)+'|'+bsNN(n);
+// ── Necesidad según el cronograma de termoformado (misma cuenta que el panel, v3.11) ──
+const TJ_N=30,TJ_DEM=5,TJ_EVT={MANT:1,MATRIZ:1,ROTURA:1,SINBOB:1};
+function tjRend(p){const r=(DB.bobinas||[]).filter(b=>b.prod===p&&(b.uds||0)>0).sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||'')).slice(0,TJ_N);if(!r.length)return null;
+  const cp=r.map(b=>{const c=cajasXPallet(p,b.uxp)||0;return c>0?(b.cajas||0)/c:null;}).filter(x=>x>0);
+  return {uds:r.reduce((s,b)=>s+(b.uds||0),0)/r.length,pal:cp.length?cp.reduce((s,x)=>s+x,0)/cp.length:0};}
+function tjKgBob(p){const k=a=>a.map(x=>+x.kg||0).filter(v=>v>0);let v=k((DB.bobStock||[]).filter(x=>x.prod===p).slice(-TJ_N));if(!v.length)v=k((DB.bobinas||[]).filter(x=>x.prod===p).slice(-TJ_N));if(!v.length)v=k((DB.bobStock||[]).slice(-TJ_N));return v.length?v.reduce((s,x)=>s+x,0)/v.length:0;}
+function tjEntregas(){const out=new Map();const ents=DB.bobPedidos||[];
+  [...new Set(ents.map(e=>e.prod))].forEach(p=>{const es=ents.filter(e=>e.prod===p).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')||(a.id>b.id?1:-1));
+    es.filter(e=>e.recibido).forEach(e=>out.set(e.id,{pend:0,llego:true}));const au=es.filter(e=>!e.recibido);if(!au.length)return;
+    const fp=e=>e.fechaPedido||(e.ts||'').slice(0,10)||e.fecha;const desde=au.reduce((m,e)=>!m||fp(e)<m?fp(e):m,'');const rec=new Map(au.map(e=>[e.id,0]));
+    (DB.bobStock||[]).filter(x=>x.prod===p&&(x.fechaIng||'')>=desde).sort((a,b)=>(a.fechaIng||'').localeCompare(b.fechaIng||'')).forEach(x=>{let kg=+x.kg||0;for(const e of au){if(kg<=0)break;if(fp(e)>(x.fechaIng||''))continue;const f=(+e.kg||0)-rec.get(e.id);if(f<=0)continue;const r=Math.min(f,kg);rec.set(e.id,rec.get(e.id)+r);kg-=r;}});
+    const kb=tjKgBob(p);au.forEach(e=>{const kg=+e.kg||0,pend=kg-rec.get(e.id);out.set(e.id,{pend,llego:pend<=Math.max(kb*0.5,kg*0.05)});});});
+  return out;}
+function tjMat(stockPor){
+  const now=new Date(),hoy=ymd(now),h=now.getHours();const ord=s=>s.fecha+(s.turno==='N'?'2':'1');
+  const fut=(DB.cronograma||[]).filter(s=>!TJ_EVT[s.prod]&&CAT[s.prod]&&s.fecha>=hoy).sort((a,b)=>ord(a).localeCompare(ord(b)));
+  const ent=tjEntregas();const res={};
+  const prods=new Set(fut.map(s=>s.prod).concat((DB.bobPedidos||[]).filter(e=>CAT[e.prod]&&!(ent.get(e.id)||{}).llego).map(e=>e.prod)));
+  prods.forEach(p=>{
+    const rd=tjRend(p),kb=tjKgBob(p),stock=stockPor[p]||0;
+    const cam=(DB.bobPedidos||[]).filter(e=>e.prod===p&&!(ent.get(e.id)||{}).llego&&e.fecha>=hoy).map(e=>({fecha:e.fecha,bob:kb>0?(ent.get(e.id)||{pend:+e.kg||0}).pend/kb:0})).sort((a,b)=>a.fecha.localeCompare(b.fecha));
+    const enCam=cam.reduce((a,x)=>a+x.bob,0);
+    const disp=s=>stock+cam.filter(x=>x.fecha<s.fecha||(x.fecha===s.fecha&&s.turno==='N')).reduce((a,x)=>a+x.bob,0);
+    let nec=0,acum=0,quiebre=null;
+    fut.filter(s=>s.prod===p).forEach(s=>{let pal=s.meta||0,uds=objetivoTurno(p,s.turno);
+      if(s.fecha===hoy){if(s.turno!=='N'&&h>=(s.turno==='M1'?16:19))return;const ts=s.turno==='N'?['N']:['M1','M2'];const bs=(DB.bobinas||[]).filter(b=>b.fecha===hoy&&b.prod===p&&ts.includes(b.turno));
+        const palEq=bs.reduce((a,b)=>{const c=cajasXPallet(p,b.uxp)||0;return a+(c>0?(b.cajas||0)/c:0);},0);pal=Math.max(0,pal-palEq);uds=Math.max(0,uds-bs.reduce((a,b)=>a+(b.uds||0),0));}
+      const b=(s.meta||0)>0&&rd&&rd.pal>0?pal/rd.pal:(rd&&rd.uds>0?uds/rd.uds:null);if(b==null)return;
+      nec+=b;acum+=b;if(!quiebre&&acum>disp(s)+0.001)quiebre={fecha:s.fecha,turno:s.turno};});
+    let est='ok',lim=null;if(quiebre){const d=new Date(quiebre.fecha+'T00:00');d.setDate(d.getDate()-TJ_DEM);lim=ymd(d);const d3=new Date(now);d3.setDate(d3.getDate()+3);est=lim<=hoy?'bad':(lim<=ymd(d3)?'mid':'ok');}
+    res[p]={rd,nec:Math.ceil(nec),enCam,cam,quiebre,lim,est};});
+  return res;
+}
+const tjDia=(f,t)=>{const d=new Date(f+'T00:00');const x=d.toLocaleDateString('es-AR',{weekday:'short',day:'2-digit',month:'2-digit'}).replace('.','');return x.charAt(0).toUpperCase()+x.slice(1)+(t?(t==='N'?' N':' día'):'');};
 function renderBPet(){
   const usadas=new Set();(DB.bobinas||[]).forEach(b=>{if(b.partida&&b.nbob)usadas.add(bsKey(b.partida,b.nbob));});
   const stk=(DB.bobStock||[]).filter(x=>!usadas.has(bsKey(x.partida,x.nbob))&&!x.baja);
   const el=$('bpet');if(!el)return;
-  if(!(DB.bobStock||[]).length){el.innerHTML='<p class="empty">Todavía no hay ingresos cargados.</p>';$('sum-bpet').textContent='—';return;}
-  const m={};stk.forEach(x=>{const p=x.prod||'—';const r=m[p]||(m[p]={kg:0,n:0,pal:new Set(),viejo:''});r.kg+=+x.kg||0;r.n++;r.pal.add((x.remito||x.fechaIng||'')+'§'+(x.pallet||'s/p'));const f=x.fechaIng||'';if(f&&(!r.viejo||f<r.viejo))r.viejo=f;});
+  if(!(DB.bobStock||[]).length&&!(DB.cronograma||[]).length){el.innerHTML='<p class="empty">Todavía no hay ingresos cargados.</p>';$('sum-bpet').textContent='—';return;}
+  const m={};stk.forEach(x=>{const p=x.prod||'—';const r=m[p]||(m[p]={kg:0,n:0});r.kg+=+x.kg||0;r.n++;});
+  const sp={};Object.keys(m).forEach(p=>sp[p]=m[p].n);
+  let mat={};try{mat=tjMat(sp);}catch(e){console.error(e);}
   const tot=stk.reduce((s,x)=>s+(+x.kg||0),0);
-  const dias=f=>f?Math.max(0,Math.floor((Date.now()-new Date(f+'T12:00').getTime())/864e5)):null;
-  const ch=Object.entries(m).sort((a,b)=>b[1].kg-a[1].kg).map(([p,r])=>{const d=dias(r.viejo);
-    return `<div class="chip"><div class="n">${esc(p)}</div><div class="p">${fmt(r.kg)} <small>kg</small></div><div class="u">${r.n} bob · ${r.pal.size} pal${d!=null&&d>=15?` · <span class="warn">${d} d</span>`:''}</div></div>`;}).join('');
+  const prods=[...new Set(Object.keys(m).concat(Object.keys(mat)))].sort((a,b)=>{const o={bad:0,mid:1,ok:2};const ea=mat[a]?o[mat[a].est]:3,eb=mat[b]?o[mat[b].est]:3;return ea-eb||((m[b]||{}).kg||0)-((m[a]||{}).kg||0);});
+  const ch=prods.map(p=>{const r=m[p]||{kg:0,n:0};const x=mat[p];
+    const cls=x?(x.est==='bad'?' bp-bad':x.est==='mid'?' bp-mid':''):'';
+    const pill=x?(x.est==='bad'?'<span class="bp-pill bad">pedir ya</span>':x.est==='mid'?'<span class="bp-pill mid">pedir pronto</span>':''):'';
+    let l2='',l3='';
+    if(x&&x.rd){l2=`necesita <b>${fmt(x.nec)}</b>${x.enCam>0?` · 🚚 <b>${fmt(Math.round(x.enCam))}</b> en camino`:''}`;
+      l3=x.quiebre?`<span class="${x.est==='ok'?'':'warn'}">se acaba ${tjDia(x.quiebre.fecha,x.quiebre.turno)}</span>`:`<span class="bp-ok">alcanza ✓</span>`;
+      if(x.cam.length)l3+=` · llega ${tjDia(x.cam[0].fecha)}`;}
+    else if(x&&x.enCam>0)l2=`🚚 <b>${fmt(Math.round(x.enCam))}</b> en camino · llega ${tjDia(x.cam[0].fecha)}`;
+    return `<div class="chip bp${cls}"><div class="n">${esc(p)} ${pill}</div><div class="p">${fmt(r.n)} <small>bob · ${fmt(r.kg)} kg</small></div>${l2?`<div class="u">${l2}</div>`:''}${l3?`<div class="u">${l3}</div>`:''}</div>`;}).join('');
   $('sum-bpet').textContent=fmt(tot)+' kg · '+stk.length+' bob';
-  el.innerHTML=`${ch?`<div class="grid">${ch}</div>`:'<p class="empty">Sin bobinas en stock.</p>'}`;
+  el.innerHTML=`${ch?`<div class="grid bp-grid">${ch}</div>`:'<p class="empty">Sin bobinas en stock.</p>'}`;
 }
 
 let cargando=false;
